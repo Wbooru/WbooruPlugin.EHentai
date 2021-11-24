@@ -1,0 +1,3 @@
+[submodule "Dependencies/HtmlToXamlConverter"]
+	path = Dependencies/HtmlToXamlConverter
+	url = https://github.com/Wbooru/HtmlToXamlConverter
