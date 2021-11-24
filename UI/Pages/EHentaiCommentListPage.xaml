@@ -16,6 +16,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../../BaseResourceDictionary.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
+            <valueconverters:CommentScoreConverter x:Key="CommentScoreConverter"></valueconverters:CommentScoreConverter>
             <valueconverters:HtmlToRichTextBoxConverter x:Key="HtmlToRichTextBoxConverter"></valueconverters:HtmlToRichTextBoxConverter>
             <valueconverters:UnixEpochDisplayConverter x:Key="UnixEpochDisplayConverter"></valueconverters:UnixEpochDisplayConverter>
         </ResourceDictionary>
@@ -26,20 +27,12 @@
                 <ControlTemplate>
                     <StackPanel>
                         <ItemsPresenter></ItemsPresenter>
-                        <TextBlock Foreground="Gray" Text="加载更多..."></TextBlock>
                     </StackPanel>
                 </ControlTemplate>
             </ItemsControl.Template>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="20,0,20,10">
-                        <Grid Margin="0,0,0,10">
-                            <TextBlock FontSize="16" Text="{Binding User}"></TextBlock>
-                            <TextBlock FontSize="16" Text="{Binding Time,Converter={StaticResource UnixEpochDisplayConverter}}" HorizontalAlignment="Right"></TextBlock>
-                        </Grid>
-                        <controls:GalleryCommentContentViewer Comment="{Binding Comment}"></controls:GalleryCommentContentViewer>
-                        <Separator Opacity="0.2" Margin="-20,10,-20,0"></Separator>
-                    </StackPanel>
+                    <controls:GalleryCommentItem Comment="{Binding .}"></controls:GalleryCommentItem>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

@@ -1,11 +1,44 @@
-﻿<UserControl x:Class="WbooruPlugin.EHentai.UI.Controls.GalleryCommentContentViewer"
+﻿<UserControl x:Class="WbooruPlugin.EHentai.UI.Controls.GalleryCommentItem"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Controls"
+             xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Controls" xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters"
              mc:Ignorable="d">
-    <RichTextBox IsReadOnly="True" x:Name="MainRichTextBox" Background="Transparent" BorderThickness="0" Foreground="White">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../BaseResourceDictionary.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+            <valueconverters:CommentScoreConverter x:Key="CommentScoreConverter"></valueconverters:CommentScoreConverter>
+            <valueconverters:HtmlToRichTextBoxConverter x:Key="HtmlToRichTextBoxConverter"></valueconverters:HtmlToRichTextBoxConverter>
+            <valueconverters:UnixEpochDisplayConverter x:Key="UnixEpochDisplayConverter"></valueconverters:UnixEpochDisplayConverter>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel x:Name="MainPanel" Margin="20,10,20,0">
+        <Grid Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" FontSize="16" Text="{Binding Comment.User}"></TextBlock>
+                <TextBlock Text="{Binding Comment.Score,Converter={StaticResource CommentScoreConverter}}" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="16" Foreground="Gray">
+                </TextBlock>
+                <TextBlock Foreground="Gray" VerticalAlignment="Center" FontSize="16" Text="(上传者评论)">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Comment.Uploader}" Value="false">
+                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+            <TextBlock FontSize="16" Text="{Binding Comment.Time,Converter={StaticResource UnixEpochDisplayConverter}}" HorizontalAlignment="Right"></TextBlock>
+        </Grid>
+        <RichTextBox IsReadOnly="True" FontSize="14" x:Name="MainRichTextBox" Background="Transparent" BorderThickness="0" Foreground="White">
 
-    </RichTextBox>
+        </RichTextBox>
+        <Separator Opacity="0.2" Margin="-20,10,-20,0"></Separator>
+    </StackPanel>
+    
 </UserControl>

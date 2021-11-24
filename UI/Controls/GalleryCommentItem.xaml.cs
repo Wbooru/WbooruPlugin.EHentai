@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EHentaiAPI.Client.Data;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -21,30 +22,33 @@ namespace WbooruPlugin.EHentai.UI.Controls
     /// <summary>
     /// GalleryCommentItem.xaml 的交互逻辑
     /// </summary>
-    public partial class GalleryCommentContentViewer : UserControl
+    public partial class GalleryCommentItem : UserControl
     {
         private static Regex unconvertLinkRegex = new Regex(@"(?<!href="")(https?://.+?)(\s+|$|(<br>))(?<!</a>)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
-        public string Comment
+        public GalleryComment Comment
         {
-            get { return (string)GetValue(CommentProperty); }
+            get { return (GalleryComment)GetValue(CommentProperty); }
             set { SetValue(CommentProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Comment.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CommentProperty =
-            DependencyProperty.Register("Comment", typeof(string), typeof(GalleryCommentContentViewer), new PropertyMetadata("", (obj, e) =>
+            DependencyProperty.Register("Comment", typeof(GalleryComment), typeof(GalleryCommentItem), new PropertyMetadata(null, (obj, e) =>
             {
-                (obj as GalleryCommentContentViewer)?.OnCommentChanged(e);
+                (obj as GalleryCommentItem)?.OnCommentChanged(e);
             }));
 
         private void OnCommentChanged(DependencyPropertyChangedEventArgs _)
         {
+            if (Comment is null)
+                MainRichTextBox.Document = null;
+
             try
             {
-                var content = unconvertLinkRegex.Replace(Comment, match =>
+                var content = unconvertLinkRegex.Replace(Comment.Comment, match =>
                 {
-                    Log<GalleryCommentContentViewer>.Debug($"replace unconverted link: {match.Value}");
+                    Log<GalleryCommentItem>.Debug($"replace unconverted link: {match.Value}");
                     return $"<a href=\"{match.Groups[1].Value}\">{match.Groups[1].Value}</a>";
                 });
 
@@ -62,9 +66,9 @@ namespace WbooruPlugin.EHentai.UI.Controls
                     }
                 }
 
-                var xamlControls = convert(content) ?? convert(Comment) ?? new FlowDocument(new Paragraph(new Run()
+                var xamlControls = convert(content) ?? convert(Comment.Comment) ?? new FlowDocument(new Paragraph(new Run()
                 {
-                    Text = Comment
+                    Text = Comment.Comment
                 }));
 
                 var queue = new Queue<DependencyObject>();
@@ -101,9 +105,10 @@ namespace WbooruPlugin.EHentai.UI.Controls
                 });
         }
 
-        public GalleryCommentContentViewer()
+        public GalleryCommentItem()
         {
             InitializeComponent();
+            MainPanel.DataContext = this;
         }
     }
 }
