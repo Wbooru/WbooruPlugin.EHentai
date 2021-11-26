@@ -3,8 +3,12 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Pages" xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters" xmlns:controls="clr-namespace:WbooruPlugin.EHentai.UI.Controls"
-      mc:Ignorable="d" 
+      xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Pages" 
+      xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters" 
+      xmlns:controls="clr-namespace:WbooruPlugin.EHentai.UI.Controls" 
+      xmlns:controls1="clr-namespace:Wbooru.UI.Controls;assembly=Wbooru"
+      mc:Ignorable="d"  
+      Background="{StaticResource ContentBackgroundColor}"
       Title="EHentaiCommentListPage">
     <Page.DataContext>
         <Binding RelativeSource="{RelativeSource Self}">
@@ -16,25 +20,74 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../../BaseResourceDictionary.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
-            <valueconverters:CommentScoreConverter x:Key="CommentScoreConverter"></valueconverters:CommentScoreConverter>
-            <valueconverters:HtmlToRichTextBoxConverter x:Key="HtmlToRichTextBoxConverter"></valueconverters:HtmlToRichTextBoxConverter>
-            <valueconverters:UnixEpochDisplayConverter x:Key="UnixEpochDisplayConverter"></valueconverters:UnixEpochDisplayConverter>
+            
+            <Style TargetType="{x:Type ContextMenu}">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ContextMenu}">
+                            <Border Background="{StaticResource ContentBackgroundColor_LowTransparent}"
+                            BorderBrush="White"
+                            BorderThickness="1">
+                                <StackPanel ClipToBounds="True">
+                                    <StackPanel IsItemsHost="True"/>
+                                </StackPanel>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Page.Resources>
-    <ScrollViewer Background="{StaticResource ContentBackgroundColor}">
-        <ItemsControl ItemsSource="{Binding Comments}">
-            <ItemsControl.Template>
-                <ControlTemplate>
-                    <StackPanel>
-                        <ItemsPresenter></ItemsPresenter>
-                    </StackPanel>
-                </ControlTemplate>
-            </ItemsControl.Template>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <controls:GalleryCommentItem Comment="{Binding .}"></controls:GalleryCommentItem>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Background="{StaticResource BoardColor}" Height="{StaticResource BoardHeaderHeight}">
+            <controls1:MenuButton
+                        ButtonBase.Click="MenuButton_Click"
+                        ContentMargin="5,0,0,0"
+                        Icon=""
+                        Text="返回" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Comments}">
+                <ItemsControl.Template>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <ItemsPresenter></ItemsPresenter>
+                        </StackPanel>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:GalleryCommentItem Comment="{Binding .}">
+                            <controls:GalleryCommentItem.ContextMenu>
+                                <ContextMenu>
+                                    <ContextMenu.Resources>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="Padding" Value="5,10,5,10" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="Icon">
+                                                <Setter.Value>
+                                                    <Grid Background="Transparent">
+                                                    </Grid>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ContextMenu.Resources>
+                                    <MenuItem Header="赞同此评论"></MenuItem>
+                                    <MenuItem Header="反对此评论"></MenuItem>
+                                </ContextMenu>
+                            </controls:GalleryCommentItem.ContextMenu>
+                        </controls:GalleryCommentItem>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
 </Page>

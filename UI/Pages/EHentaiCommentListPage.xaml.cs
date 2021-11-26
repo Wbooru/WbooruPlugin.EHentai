@@ -60,5 +60,10 @@ namespace WbooruPlugin.EHentai.UI.Pages
         public void OnNavigationForwardAction()
         {
         }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            OnNavigationBackAction();
+        }
     }
 }
