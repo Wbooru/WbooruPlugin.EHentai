@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
