@@ -24,7 +24,7 @@ namespace WbooruPlugin.EHentai.UI.Controls
     /// </summary>
     public partial class GalleryCommentItem : UserControl
     {
-        private static Regex unconvertLinkRegex = new Regex(@"(?<!href="")(https?://.+?)(\s+|$|(<br>))(?<!</a>)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        private static Regex urlRegex = new Regex(@"(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])");
 
         public GalleryComment Comment
         {
@@ -46,11 +46,7 @@ namespace WbooruPlugin.EHentai.UI.Controls
 
             try
             {
-                var content = unconvertLinkRegex.Replace(Comment.Comment, match =>
-                {
-                    Log<GalleryCommentItem>.Debug($"replace unconverted link: {match.Value}");
-                    return $"<a href=\"{match.Groups[1].Value}\">{match.Groups[1].Value}</a>";
-                });
+                var content = Comment.Comment;
 
                 FlowDocument convert(string c)
                 {
@@ -66,11 +62,86 @@ namespace WbooruPlugin.EHentai.UI.Controls
                     }
                 }
 
-                var xamlControls = convert(content) ?? convert(Comment.Comment) ?? new FlowDocument(new Paragraph(new Run()
+                var xamlControls = convert(Comment.Comment) ?? new FlowDocument(new Paragraph(new Run()
                 {
                     Text = Comment.Comment
                 }));
 
+                //make some url link as hyperlink object.
+                IEnumerable<T> RecursiveGet<T>(DependencyObject o) where T : DependencyObject
+                {
+                    if (o is T t)
+                        yield return t;
+                    foreach (var i in LogicalTreeHelper.GetChildren(o).OfType<DependencyObject>().Select(x => RecursiveGet<T>(x)).SelectMany(x => x))
+                        yield return i;
+                }
+
+                while (true)
+                {
+                    (var _, var match, var run, var inlines) = RecursiveGet<Run>(xamlControls).Select(sr =>
+                    {
+                        var match = urlRegex.Match(sr.Text);
+                        return (match.Success, match, sr, (sr.Parent as Paragraph)?.Inlines);
+                    }).Where(x => x.Success && x.Item4 != null)
+                        .Where(zz =>
+                        {
+                            var parent = zz.sr.Parent;
+                            if (parent != null)
+                            {
+                                if (parent is Hyperlink)
+                                    return false;
+                                parent = (parent as FrameworkContentElement)?.Parent;
+                            }
+                            return true;
+                        }).FirstOrDefault();
+
+                    if (match is null)
+                        break;
+
+                    var beforeRun = new Run()
+                    {
+                        Text = run.Text.Substring(0, match.Index - 0)
+                    };
+
+                    var link = match.Value.Trim();
+                    var genHyperLink = new Hyperlink()
+                    {
+                        NavigateUri = new Uri(link)
+                    };
+                    genHyperLink.Inlines.Add(new Run() { Text = link });
+
+                    var afterRun = new Run()
+                    {
+                        Text = " " + run.Text.Substring(match.Index + match.Length)
+                    };
+
+                    var insertAfter = run.PreviousInline;
+                    var insertBefore = run.NextInline;
+                    inlines.Remove(run);
+
+                    if (insertAfter != null)
+                    {
+                        inlines.InsertAfter(insertAfter, beforeRun);
+                        inlines.InsertAfter(beforeRun, genHyperLink);
+                        inlines.InsertAfter(genHyperLink, afterRun);
+                    }
+                    else if (insertBefore != null)
+                    {
+                        inlines.InsertBefore(insertBefore, afterRun);
+                        inlines.InsertBefore(afterRun, genHyperLink);
+                        inlines.InsertBefore(genHyperLink, beforeRun);
+                    }
+                    else
+                    {
+                        inlines.Add(beforeRun);
+                        inlines.Add(genHyperLink);
+                        inlines.Add(afterRun);
+                    }
+
+                    Log.Debug($"make pure text url {link} as hyperlink.");
+                }
+
+                //make Hyperlink objects clickable
                 var queue = new Queue<DependencyObject>();
                 queue.Enqueue(xamlControls);
 

@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Controls" xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters"
+             xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Controls" xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters" 
+             xmlns:controls="clr-namespace:WbooruPlugin.EHentai.UI.Controls" 
+             d:DataContext="{d:DesignInstance Type=controls:GalleryCommentItem}"
              mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
