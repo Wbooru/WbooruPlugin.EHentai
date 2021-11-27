@@ -1,12 +1,16 @@
 ﻿using EHentaiAPI;
 using EHentaiAPI.Client;
 using EHentaiAPI.Client.Data;
+using EHentaiAPI.ExtendFunction;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading.Tasks;
+using Wbooru;
 using Wbooru.Galleries;
 using Wbooru.Galleries.SupportFeatures;
 using Wbooru.Models.Gallery;
+using Wbooru.Settings;
 using Wbooru.UI.Pages;
 using WbooruPlugin.EHentai.UI;
 using WbooruPlugin.EHentai.UI.Pages;
@@ -15,16 +19,20 @@ using WbooruPlugin.EHentai.Utils;
 namespace WbooruPlugin.EHentai
 {
     [Export(typeof(Gallery))]
-    public class EHentaiGallery : Gallery, ICustomDetailImagePage
+    public class EHentaiGallery : Gallery, ICustomDetailImagePage, IGalleryAccount
     {
         private EhClient client;
 
         public override string GalleryName => "EHentai";
 
+        public bool IsLoggined => client.Cookies.GetCookies(new System.Uri(client.EhUrl.GetHost()))?.Any(x => x.Name.Equals("ipb_pass_hash", System.StringComparison.InvariantCultureIgnoreCase) && x.Name.Equals("ipb_member_id", System.StringComparison.InvariantCultureIgnoreCase)) ?? false;
+
+        public CustomLoginPage CustomLoginPage => new DefaultLoginPage(this);
+
         public EHentaiGallery()
         {
             client = new EhClient();
-            EHentaiAPI.ExtendFunction.Request.RequestFactory = (url) => new EHentaiRequest(url);
+            Request.RequestFactory = (url) => new EHentaiRequest(url);
             client.Settings.PutGallerySite(EhUrl.SITE_E);
             //强制钦定一下列表样式
             client.Cookies.Add(new System.Net.Cookie("sl", "dm_1", "/", "e-hentai.org"));
@@ -83,6 +91,21 @@ namespace WbooruPlugin.EHentai
         public DetailImagePageBase GenerateDetailImagePageObject()
         {
             return new EHentaiGalleryDetailPage(client);
+        }
+
+        public async Task AccountLoginAsync(AccountInfo info)
+        {
+            var respUserName = await client.SignInAsync(info.Name, info.Password);
+            if (respUserName?.Equals(info.Name, System.StringComparison.InvariantCultureIgnoreCase) ?? false)
+            {
+                Log<EHentaiGallery>.Info("login successfully.");
+            }
+        }
+
+        public Task AccountLogoutAsync()
+        {
+            //nothing to do.
+            return Task.CompletedTask;
         }
     }
 }
