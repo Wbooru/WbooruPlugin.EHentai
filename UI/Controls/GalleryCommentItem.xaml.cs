@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Wbooru;
+using Wbooru.Utils;
 
 namespace WbooruPlugin.EHentai.UI.Controls
 {
@@ -67,18 +68,9 @@ namespace WbooruPlugin.EHentai.UI.Controls
                     Text = Comment.Comment
                 }));
 
-                //make some url link as hyperlink object.
-                IEnumerable<T> RecursiveGet<T>(DependencyObject o) where T : DependencyObject
-                {
-                    if (o is T t)
-                        yield return t;
-                    foreach (var i in LogicalTreeHelper.GetChildren(o).OfType<DependencyObject>().Select(x => RecursiveGet<T>(x)).SelectMany(x => x))
-                        yield return i;
-                }
-
                 while (true)
                 {
-                    (var _, var match, var run, var inlines) = RecursiveGet<Run>(xamlControls).Select(sr =>
+                    (var _, var match, var run, var inlines) = ViusalTreeHelperEx.GetAllRecursively<Run>(xamlControls).Select(sr =>
                     {
                         var match = urlRegex.Match(sr.Text);
                         return (match.Success, match, sr, (sr.Parent as Paragraph)?.Inlines);
@@ -142,21 +134,10 @@ namespace WbooruPlugin.EHentai.UI.Controls
                 }
 
                 //make Hyperlink objects clickable
-                var queue = new Queue<DependencyObject>();
-                queue.Enqueue(xamlControls);
-
-                while (queue.Count > 0)
+                foreach (var link in ViusalTreeHelperEx.GetAllRecursively<Hyperlink>(xamlControls))
                 {
-                    var d = queue.Dequeue();
-
-                    if (d is Hyperlink link)
-                    {
-                        link.Foreground = Brushes.White;
-                        link.PreviewMouseDown += Link_PreviewMouseDown;
-                    }
-
-                    foreach (var child in LogicalTreeHelper.GetChildren(d).OfType<DependencyObject>())
-                        queue.Enqueue(child);
+                    link.Foreground = Brushes.White;
+                    //link.PreviewMouseDown += Link_PreviewMouseDown;
                 }
 
                 MainRichTextBox.Document = xamlControls;
@@ -167,19 +148,34 @@ namespace WbooruPlugin.EHentai.UI.Controls
             }
         }
 
-        private void Link_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        internal void HideBaseLine()
         {
-            if ((sender as Hyperlink)?.NavigateUri?.AbsoluteUri is string url && !string.IsNullOrWhiteSpace(url))
-                Process.Start(new ProcessStartInfo(url)
-                {
-                    UseShellExecute = true
-                });
+            BaseLine.Visibility = Visibility.Collapsed;
+            InvalidateMeasure();
         }
 
         public GalleryCommentItem()
         {
             InitializeComponent();
             MainPanel.DataContext = this;
+        }
+
+        private void MainRichTextBox_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void MainRichTextBox_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            e.Handled = true;
+
+            if (e?.Uri?.AbsoluteUri is string url && !string.IsNullOrWhiteSpace(url))
+            {
+                Process.Start(new ProcessStartInfo(url)
+                {
+                    UseShellExecute = true
+                });
+            }
         }
     }
 }

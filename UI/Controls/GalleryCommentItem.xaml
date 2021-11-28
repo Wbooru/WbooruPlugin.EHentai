@@ -37,10 +37,10 @@
             </StackPanel>
             <TextBlock FontSize="16" Text="{Binding Comment.Time,Converter={StaticResource UnixEpochDisplayConverter}}" HorizontalAlignment="Right"></TextBlock>
         </Grid>
-        <RichTextBox IsReadOnly="True" FontSize="14" x:Name="MainRichTextBox" Background="Transparent" BorderThickness="0" Foreground="White">
+        <RichTextBox Hyperlink.RequestNavigate="MainRichTextBox_RequestNavigate" RequestBringIntoView="MainRichTextBox_RequestBringIntoView" IsDocumentEnabled="True" IsReadOnly="True" FontSize="14" x:Name="MainRichTextBox" Background="Transparent" BorderThickness="0" Foreground="White">
 
         </RichTextBox>
-        <Separator Opacity="0.2" Margin="-20,10,-20,0"></Separator>
+        <Separator x:Name="BaseLine" Opacity="0.2" Margin="-20,10,-20,0"></Separator>
     </StackPanel>
     
 </UserControl>
