@@ -2,6 +2,7 @@
 using EHentaiAPI.Client;
 using EHentaiAPI.Client.Data;
 using EHentaiAPI.ExtendFunction;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace WbooruPlugin.EHentai
 
         public override string GalleryName => "EHentai";
 
-        public bool IsLoggined => client.Cookies.GetCookies(new System.Uri(client.EhUrl.GetHost()))?.Any(x => x.Name.Equals("ipb_pass_hash", System.StringComparison.InvariantCultureIgnoreCase) && x.Name.Equals("ipb_member_id", System.StringComparison.InvariantCultureIgnoreCase)) ?? false;
+        public bool IsLoggined => client.Cookies.GetCookies(new System.Uri(client.EhUrl.GetHost()))?.Any(x => x.Name.Equals("ipb_pass_hash", System.StringComparison.InvariantCultureIgnoreCase) || x.Name.Equals("ipb_member_id", System.StringComparison.InvariantCultureIgnoreCase)) ?? false;
 
         public CustomLoginPage CustomLoginPage => new DefaultLoginPage(this);
 
@@ -95,10 +96,17 @@ namespace WbooruPlugin.EHentai
 
         public async Task AccountLoginAsync(AccountInfo info)
         {
-            var respUserName = await client.SignInAsync(info.Name, info.Password);
-            if (respUserName?.Equals(info.Name, System.StringComparison.InvariantCultureIgnoreCase) ?? false)
+            try
             {
-                Log<EHentaiGallery>.Info("login successfully.");
+                var respUserName = await client.SignInAsync(info.Name, info.Password);
+                if (respUserName?.Equals(info.Name, System.StringComparison.InvariantCultureIgnoreCase) ?? false)
+                {
+                    Log<EHentaiGallery>.Info("login successfully.");
+                }
+            }
+            catch (Exception e)
+            {
+                Log<EHentaiGallery>.Error(e.Message);
             }
         }
 

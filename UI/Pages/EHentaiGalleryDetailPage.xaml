@@ -185,10 +185,40 @@
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <panels:GridFlowPanel
+                            Width="{Binding ActualWidth, ElementName=PreviewImageList}"
                             GridItemMarginWidth="{Binding GridItemMarginWidth}"
                             GridItemWidth="{Binding GridItemWidth}" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
+                <ItemsControl.Template>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <ItemsPresenter />
+                            <TextBlock IsEnabled="{Binding HasMorePages}" MouseDown="TextBlock_MouseDown_1" Margin="0,10,0,10" FontSize="14" Foreground="Gray" HorizontalAlignment="Center" FontWeight="Bold" d:Text="查看完整图片列表">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsMouseOver" Value="True"></Condition>
+                                                    <Condition Property="IsEnabled" Value="True"></Condition>
+                                                </MultiTrigger.Conditions>
+
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </MultiTrigger>
+                                            <DataTrigger Binding="{Binding HasMorePages}" Value="True">
+                                                <Setter Property="Text" Value="查看完整图片列表"></Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HasMorePages}" Value="False">
+                                                <Setter Property="Text" Value="无更多图片"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </ControlTemplate>
+                </ItemsControl.Template>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="5">
@@ -206,14 +236,13 @@
                                     Name="GalleryImage"
                                     Width="{Binding Width, ElementName=GalleryImageBorder}"
                                     Height="{Binding Height, ElementName=GalleryImageBorder}"
-                                    DataContext="{Binding Converter={StaticResource ImageAsyncLoadingConverter}}"
-                                    Source="{Binding ImageUrl}" />
+                                    DataContext="{Binding ImageAsync,Converter={StaticResource ImageAsyncLoadingConverter}}"
+                                    Source="{Binding AsyncValue}" />
                             </Border>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Grid Height="500"></Grid>
         </StackPanel>
     </ScrollViewer>
 </pages:DetailImagePageBase>

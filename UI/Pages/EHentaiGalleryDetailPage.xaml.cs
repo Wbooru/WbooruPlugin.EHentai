@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,10 +19,12 @@ using System.Windows.Shapes;
 using Wbooru;
 using Wbooru.Galleries;
 using Wbooru.Kernel;
+using Wbooru.Models;
 using Wbooru.Models.Gallery;
 using Wbooru.Settings;
 using Wbooru.UI.Controls;
 using Wbooru.UI.Pages;
+using Wbooru.UI.ValueConverters;
 using WbooruPlugin.EHentai.UI.Controls;
 
 namespace WbooruPlugin.EHentai.UI.Pages
@@ -31,10 +34,12 @@ namespace WbooruPlugin.EHentai.UI.Pages
     /// </summary>
     public partial class EHentaiGalleryDetailPage : DetailImagePageBase
     {
+        private static Regex imageSizeParser = new Regex(@"(\d+)-(\d+)(-\w*)?\.\w+");
+
         public class ImageInfo
         {
-            public Size PreviewImageSize { get; set; }
-            public string ImageUrl { get; set; }
+            public ImageSize PreviewImageSize { get; set; }
+            public ImageAsyncLoadingParam ImageAsync { get; set; }
         }
 
         public uint GridItemWidth => Setting<GlobalSetting>.Current.PictureGridItemWidth;
@@ -68,6 +73,16 @@ namespace WbooruPlugin.EHentai.UI.Pages
         // Using a DependencyProperty as the backing store for CommentPageButtonState.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CommentPageButtonStateProperty =
             DependencyProperty.Register("CommentPageButtonState", typeof(int), typeof(EHentaiGalleryDetailPage), new PropertyMetadata(0));
+
+        public bool HasMorePages
+        {
+            get { return (bool)GetValue(HasMorePagesProperty); }
+            set { SetValue(HasMorePagesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HasMorePages.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HasMorePagesProperty =
+            DependencyProperty.Register("HasMorePages", typeof(bool), typeof(EHentaiGalleryDetailPage), new PropertyMetadata(false));
 
         private readonly EhClient client;
 
@@ -121,19 +136,31 @@ namespace WbooruPlugin.EHentai.UI.Pages
 
             PreviewImages.Clear();
 
-            var list = await client.GetPreviewSetAsync(Detail.Detail,0);
+            var list = await client.GetPreviewSetAsync(Detail.Detail, 0);
 
-            foreach (var item in Enumerable.Repeat(new ImageInfo()
+            for (int r = 0; r < Math.Min(list.Key.Size,20); r++)
             {
-                PreviewImageSize = new Size()
+                var imageUrl = list.Key.GetGalleryPreview(Detail.Detail.Gid, r)?.ImageUrl ?? "";
+                var match = imageSizeParser.Match(imageUrl);
+                if (match.Success)
                 {
-                    Width = 100,
-                    Height = 200
-                },
-                ImageUrl = ""
-            }, 20))
-            {
-                PreviewImages.Add(item);
+                    var width = int.Parse(match.Groups[1].Value);
+                    var height = int.Parse(match.Groups[2].Value);
+
+                    PreviewImages.Add(new()
+                    {
+                        PreviewImageSize = new ImageSize()
+                        {
+                            Width = width,
+                            Height = height
+                        },
+                        ImageAsync = new ImageAsyncLoadingParam()
+                        {
+                            ImageUrl = imageUrl,
+                            PreviewImageDownloadUrl = imageUrl
+                        }
+                    });
+                }
             }
         }
 
@@ -143,6 +170,11 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 return;
             var commentPage = new EHentaiCommentListPage(client, Detail.Detail);
             NavigationHelper.NavigationPush(commentPage);
+        }
+
+        private void TextBlock_MouseDown_1(object sender, MouseButtonEventArgs e)
+        {
+            //查看列表
         }
     }
 }
