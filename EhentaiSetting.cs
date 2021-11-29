@@ -11,6 +11,6 @@ namespace WbooruPlugin.EHentai
     [Export(typeof(SettingBase))]
     public class EhentaiSetting : SettingBase
     {
-
+        public uint DetailPagePreviewImagesCount { get; set; } = 20;
     }
 }

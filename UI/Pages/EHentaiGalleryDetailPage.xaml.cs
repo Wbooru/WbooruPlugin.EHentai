@@ -23,9 +23,11 @@ using Wbooru.Models;
 using Wbooru.Models.Gallery;
 using Wbooru.Settings;
 using Wbooru.UI.Controls;
+using Wbooru.UI.Dialogs;
 using Wbooru.UI.Pages;
 using Wbooru.UI.ValueConverters;
 using WbooruPlugin.EHentai.UI.Controls;
+using WbooruPlugin.EHentai.UI.Dialogs;
 
 namespace WbooruPlugin.EHentai.UI.Pages
 {
@@ -137,8 +139,9 @@ namespace WbooruPlugin.EHentai.UI.Pages
             PreviewImages.Clear();
 
             var list = await client.GetPreviewSetAsync(Detail.Detail, 0);
+            var previewImagesCount = Setting<EhentaiSetting>.Current.DetailPagePreviewImagesCount;
 
-            for (int r = 0; r < Math.Min(list.Key.Size,20); r++)
+            for (int r = 0; r < Math.Min(list.Key.Size, previewImagesCount); r++)
             {
                 var imageUrl = list.Key.GetGalleryPreview(Detail.Detail.Gid, r)?.ImageUrl ?? "";
                 var match = imageSizeParser.Match(imageUrl);
@@ -162,6 +165,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
                     });
                 }
             }
+
+            HasMorePages = list.Key.Size > previewImagesCount;
         }
 
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
@@ -175,6 +180,17 @@ namespace WbooruPlugin.EHentai.UI.Pages
         private void TextBlock_MouseDown_1(object sender, MouseButtonEventArgs e)
         {
             //查看列表
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            //收藏管理
+            var dialog = new FavoriteSelectDialog(client, Detail);
+            await Dialog.ShowDialog(dialog);
+            var d = Detail;
+            Detail = null;
+            Detail = d;
+            //InvalidateProperty(DetailProperty);
         }
     }
 }
