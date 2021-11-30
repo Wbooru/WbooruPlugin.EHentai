@@ -26,6 +26,26 @@
     <ProjectReference Include="Dependencies\HtmlToXamlConverter\src\HtmlToXamlConverter\HtmlToXamlConverter.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="UI\Dialogs\TorrentsSelectDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Pages\EHentaiGalleryInfoPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="UI\Dialogs\TorrentsSelectDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="UI\Pages\EHentaiGalleryInfoPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(ProjectDir)$(OutDir)*&quot; &quot;$(SolutionDir)Wbooru\bin\$(ConfigurationName)\net5.0-windows\Plugins\$(ProjectName)\&quot; /e /s /y" />
   </Target>

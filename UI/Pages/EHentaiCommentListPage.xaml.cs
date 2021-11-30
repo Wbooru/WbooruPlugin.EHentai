@@ -22,7 +22,7 @@ namespace WbooruPlugin.EHentai.UI.Pages
     /// <summary>
     /// EHentaiCommentListPage.xaml 的交互逻辑
     /// </summary>
-    public partial class EHentaiCommentListPage : Page, INavigatableAction
+    public partial class EHentaiCommentListPage : Page
     {
         private readonly EhClient client;
         private readonly GalleryDetail detail;
@@ -52,18 +52,9 @@ namespace WbooruPlugin.EHentai.UI.Pages
             HasMore = detail.Comments.HasMore;
         }
 
-        public void OnNavigationBackAction()
-        {
-            NavigationHelper.NavigationPop();
-        }
-
-        public void OnNavigationForwardAction()
-        {
-        }
-
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
-            OnNavigationBackAction();
+            NavigationHelper.NavigationPop();
         }
     }
 }

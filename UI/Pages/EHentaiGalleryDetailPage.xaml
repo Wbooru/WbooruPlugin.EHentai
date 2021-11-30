@@ -37,6 +37,16 @@
 
     <ScrollViewer Background="{StaticResource ContentBackgroundColor}">
         <StackPanel>
+            <StackPanel
+                Height="{StaticResource BoardHeaderHeight}"
+                Background="{StaticResource BoardColor}"
+                Orientation="Horizontal">
+                <controls1:MenuButton
+                    ButtonBase.Click="MenuButton_Click"
+                    ContentMargin="5,0,0,0"
+                    Icon=""
+                    Text="返回" />
+            </StackPanel>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition>
@@ -160,6 +170,7 @@
                     FontSize="14"
                     FontWeight="Bold"
                     Foreground="Gray"
+                    MouseDown="TextBlock_MouseDown_2"
                     Style="{StaticResource ClickableTextBlock}"
                     Text="查看更多信息">
                 </TextBlock>
@@ -225,7 +236,10 @@
                             </TextBlock>
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="1" VerticalAlignment="Bottom">
+                    <Button
+                        Grid.Column="1"
+                        VerticalAlignment="Bottom"
+                        Click="Button_Click_1">
                         <StackPanel>
                             <Label
                                 FontFamily="Segoe UI Symbol"

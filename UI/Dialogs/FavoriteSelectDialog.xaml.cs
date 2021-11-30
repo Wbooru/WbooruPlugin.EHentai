@@ -78,16 +78,9 @@ namespace WbooruPlugin.EHentai.UI.Dialogs
 
         private void InitializeDisplayItems()
         {
-            /*
-            DisplayItems.Add(new FavoriteDisplayItem()
-            {
-                Name = "本地收藏",
-            });
-            */
             for (int i = 0; i <= 9; i++)
             {
-                FavoriteDisplayItem item = default;
-                item = new FavoriteDisplayItem()
+                var item = new FavoriteDisplayItem()
                 {
                     Name = $"Favorites {i}",
                     FavoriteSlot = i,

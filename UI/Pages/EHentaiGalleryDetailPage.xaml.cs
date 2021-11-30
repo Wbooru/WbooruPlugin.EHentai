@@ -192,5 +192,23 @@ namespace WbooruPlugin.EHentai.UI.Pages
             Detail = d;
             //InvalidateProperty(DetailProperty);
         }
+
+        private async void TextBlock_MouseDown_2(object sender, MouseButtonEventArgs e)
+        {
+            //查看画廊信息
+            await NavigationHelper.NavigationPush(new EHentaiGalleryInfoPage(Detail.Detail));
+        }
+
+        private async void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            //种子下载
+            var dialog = new TorrentsSelectDialog(client, Detail);
+            await Dialog.ShowDialog(dialog);
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationHelper.NavigationPop();
+        }
     }
 }
