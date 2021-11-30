@@ -1,0 +1,123 @@
+﻿<Page
+    x:Class="WbooruPlugin.EHentai.UI.Pages.EHentaiGalleryImageListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:WbooruPlugin.EHentai.UI.Controls"
+    xmlns:controls1="clr-namespace:Wbooru.UI.Controls;assembly=Wbooru"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:panels="clr-namespace:Wbooru.UI.Panels;assembly=Wbooru"
+    xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters"
+    Title="EHentaiCommentListPage"
+    Background="{StaticResource ContentBackgroundColor}"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <Binding RelativeSource="{RelativeSource Self}">
+        </Binding>
+    </Page.DataContext>
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../BaseResourceDictionary.xaml">
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto">
+            </RowDefinition>
+            <RowDefinition Height="*">
+            </RowDefinition>
+        </Grid.RowDefinitions>
+        <StackPanel
+            Height="{StaticResource BoardHeaderHeight}"
+            Background="{StaticResource BoardColor}"
+            Orientation="Horizontal">
+            <controls1:MenuButton
+                ButtonBase.Click="MenuButton_Click"
+                ContentMargin="5,0,0,0"
+                Icon=""
+                Text="返回" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl x:Name="PreviewImageList" ItemsSource="{Binding PreviewImages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <panels:GridFlowPanel
+                            Width="{Binding ActualWidth, ElementName=PreviewImageList}"
+                            GridItemMarginWidth="{Binding GridItemMarginWidth}"
+                            GridItemWidth="{Binding GridItemWidth}" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Template>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <ItemsPresenter />
+                            <TextBlock
+                                Margin="0,10,0,10"
+                                HorizontalAlignment="Center"
+                                d:Text="查看完整图片列表"
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Foreground="Gray"
+                                IsEnabled="{Binding HasMorePages}"
+                                MouseDown="TextBlock_MouseDown">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsMouseOver" Value="True">
+                                                    </Condition>
+                                                    <Condition Property="IsEnabled" Value="True">
+                                                    </Condition>
+                                                </MultiTrigger.Conditions>
+
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </MultiTrigger>
+                                            <DataTrigger Binding="{Binding HasMorePages}" Value="True">
+                                                <Setter Property="Text" Value="查看完整图片列表">
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HasMorePages}" Value="False">
+                                                <Setter Property="Text" Value="无更多图片">
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="5">
+                            <Border
+                                Name="GalleryImageBorder"
+                                Width="{Binding DataContext.GridItemWidth, ElementName=PreviewImageList}"
+                                Background="#3FFFFFFF">
+                                <Border.Height>
+                                    <MultiBinding Converter="{StaticResource AutoFitHeightConverter}">
+                                        <Binding Path="PreviewImageSize" />
+                                        <Binding ElementName="PreviewImageList" Path="DataContext.GridItemWidth" />
+                                    </MultiBinding>
+                                </Border.Height>
+                                <Image
+                                    Name="GalleryImage"
+                                    Width="{Binding Width, ElementName=GalleryImageBorder}"
+                                    Height="{Binding Height, ElementName=GalleryImageBorder}"
+                                    DataContext="{Binding ImageAsync, Converter={StaticResource ImageAsyncLoadingConverter}}"
+                                    Source="{Binding AsyncValue}" />
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Page>

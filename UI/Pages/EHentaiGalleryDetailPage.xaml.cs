@@ -38,16 +38,10 @@ namespace WbooruPlugin.EHentai.UI.Pages
     {
         private static Regex imageSizeParser = new Regex(@"(\d+)-(\d+)(-\w*)?\.\w+");
 
-        public class ImageInfo
-        {
-            public ImageSize PreviewImageSize { get; set; }
-            public ImageAsyncLoadingParam ImageAsync { get; set; }
-        }
-
         public uint GridItemWidth => Setting<GlobalSetting>.Current.PictureGridItemWidth;
         public uint GridItemMarginWidth => Setting<GlobalSetting>.Current.PictureGridItemMarginWidth;
 
-        public ObservableCollection<ImageInfo> PreviewImages { get; } = new ObservableCollection<ImageInfo>();
+        public ObservableCollection<ImageInfo> PreviewImages { get; } = new ();
 
         public EHentaiImageGalleryImageDetail Detail
         {
@@ -103,6 +97,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
             }
 
             Detail = gallery.GetImageDetial(info) as EHentaiImageGalleryImageDetail;
+
+            Log.Debug($"Thumb = {Detail.Detail.Thumb}");
 
             //动态计算几条预览评论
             //限制显示5个评论或者总添加超过300的

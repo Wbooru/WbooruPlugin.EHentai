@@ -70,7 +70,8 @@
                             Width="150"
                             Height="200"
                             Margin="20"
-                            Source="{Binding Detail.Detail.Thumb}" />
+                            DataContext="{Binding Detail.Detail.Thumb, Converter={StaticResource ImageAsyncLoadingConverter}}"
+                            Source="{Binding AsyncValue}" />
                         <StackPanel Grid.Column="1" Margin="20">
                             <TextBlock
                                 d:Text="[横槍メンゴ] もっかいしよ？ 第2-9話 [英訳]"
