@@ -41,7 +41,7 @@ namespace WbooruPlugin.EHentai.UI.Pages
         public uint GridItemWidth => Setting<GlobalSetting>.Current.PictureGridItemWidth;
         public uint GridItemMarginWidth => Setting<GlobalSetting>.Current.PictureGridItemMarginWidth;
 
-        public ObservableCollection<ImageInfo> PreviewImages { get; } = new ();
+        public ObservableCollection<ImageInfo> PreviewImages { get; } = new();
 
         public EHentaiImageGalleryImageDetail Detail
         {
@@ -162,7 +162,7 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 }
             }
 
-            HasMorePages = list.Key.Size > previewImagesCount;
+            HasMorePages = Detail.Detail.Pages > PreviewCommentItems.Count;
         }
 
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
@@ -176,6 +176,7 @@ namespace WbooruPlugin.EHentai.UI.Pages
         private void TextBlock_MouseDown_1(object sender, MouseButtonEventArgs e)
         {
             //查看列表
+            NavigationHelper.NavigationPush(new EHentaiGalleryImageListPage(client, Detail.Detail));
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)

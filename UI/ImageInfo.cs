@@ -13,4 +13,9 @@ namespace WbooruPlugin.EHentai.UI
         public ImageSize PreviewImageSize { get; set; }
         public ImageAsyncLoadingParam ImageAsync { get; set; }
     }
+
+    public class ImageInfo<T> : ImageInfo
+    {
+        public T Param { get; set; }
+    }
 }

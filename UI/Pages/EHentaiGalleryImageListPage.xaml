@@ -8,9 +8,8 @@
     xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panels="clr-namespace:Wbooru.UI.Panels;assembly=Wbooru"
-    xmlns:valueconverters="clr-namespace:WbooruPlugin.EHentai.UI.ValueConverters"
+    xmlns:valueconverters="clr-namespace:Wbooru.UI.ValueConverters;assembly=Wbooru"
     Title="EHentaiCommentListPage"
-    Background="{StaticResource ContentBackgroundColor}"
     mc:Ignorable="d">
     <Page.DataContext>
         <Binding RelativeSource="{RelativeSource Self}">
@@ -23,10 +22,14 @@
                 <ResourceDictionary Source="../../BaseResourceDictionary.xaml">
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
+            <valueconverters:AutoFitHeightConverter x:Key="AutoFitHeightConverter">
+            </valueconverters:AutoFitHeightConverter>
+            <valueconverters:ImageAsyncLoadingConverter x:Key="ImageAsyncLoadingConverter">
+            </valueconverters:ImageAsyncLoadingConverter>
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid>
+    <Grid Background="{StaticResource ContentBackgroundColor}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto">
             </RowDefinition>
@@ -43,7 +46,32 @@
                 Icon=""
                 Text="返回" />
         </StackPanel>
-        <ScrollViewer Grid.Row="1">
+        <StackPanel
+            Height="{StaticResource BoardHeaderHeight}"
+            HorizontalAlignment="Right"
+            Background="{StaticResource BoardColor}"
+            Orientation="Horizontal">
+            <Button
+                Name="PageJumpLabel"
+                Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Background="Transparent"
+                Click="PageJumpLabel_Click"
+                FontFamily="Segoe UI Symbol"
+                FontSize="16"
+                Foreground="White">
+                
+            </Button>
+        </StackPanel>
+
+        <ScrollViewer
+            x:Name="ScrollViewer"
+            Grid.Row="1"
+            PreviewMouseWheel="ScrollViewer_MouseWheel"
+            ScrollChanged="OnScrollChanged">
             <ItemsControl x:Name="PreviewImageList" ItemsSource="{Binding PreviewImages}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -53,47 +81,6 @@
                             GridItemWidth="{Binding GridItemWidth}" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-                <ItemsControl.Template>
-                    <ControlTemplate>
-                        <StackPanel>
-                            <ItemsPresenter />
-                            <TextBlock
-                                Margin="0,10,0,10"
-                                HorizontalAlignment="Center"
-                                d:Text="查看完整图片列表"
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Foreground="Gray"
-                                IsEnabled="{Binding HasMorePages}"
-                                MouseDown="TextBlock_MouseDown">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Style.Triggers>
-                                            <MultiTrigger>
-                                                <MultiTrigger.Conditions>
-                                                    <Condition Property="IsMouseOver" Value="True">
-                                                    </Condition>
-                                                    <Condition Property="IsEnabled" Value="True">
-                                                    </Condition>
-                                                </MultiTrigger.Conditions>
-
-                                                <Setter Property="Cursor" Value="Hand" />
-                                            </MultiTrigger>
-                                            <DataTrigger Binding="{Binding HasMorePages}" Value="True">
-                                                <Setter Property="Text" Value="查看完整图片列表">
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding HasMorePages}" Value="False">
-                                                <Setter Property="Text" Value="无更多图片">
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
-                    </ControlTemplate>
-                </ItemsControl.Template>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="5">
@@ -119,5 +106,39 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
+        <Popup
+            Name="PageJumpPopup"
+            AllowsTransparency="True"
+            Placement="Bottom"
+            PlacementTarget="{Binding ElementName=PageJumpLabel}"
+            PopupAnimation="Fade"
+            StaysOpen="False">
+            <StackPanel Background="{StaticResource ContentBackgroundColor_LowTransparent}" MouseLeave="StackPanel_MouseLeave">
+                <StackPanel
+                    Margin="30"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock FontSize="16">跳到</TextBlock>
+                    <TextBox
+                        Name="JumpPageInput"
+                        Width="75"
+                        HorizontalContentAlignment="Center"
+                        FontSize="16">
+                    </TextBox>
+                    <TextBlock FontSize="16" Text="{Binding Detail.PreviewPages, StringFormat=页(总共{0}页)}">
+                    </TextBlock>
+                </StackPanel>
+
+                <Button
+                    Name="JumpConfirmButton"
+                    Margin="10"
+                    BorderBrush="White"
+                    Click="JumpConfirmButton_Click"
+                    FontSize="20">
+                    确定
+                </Button>
+            </StackPanel>
+        </Popup>
     </Grid>
 </Page>
