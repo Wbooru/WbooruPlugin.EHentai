@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="VirtualizingStaggeredPanel" Version="0.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Wbooru\Wbooru.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime;native</ExcludeAssets>
