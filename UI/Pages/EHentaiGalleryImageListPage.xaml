@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panels="clr-namespace:Wbooru.UI.Panels;assembly=Wbooru"
     xmlns:valueconverters="clr-namespace:Wbooru.UI.ValueConverters;assembly=Wbooru"
+    xmlns:virtualizingstaggeredpanel="clr-namespace:MikiraSora.VirtualizingStaggeredPanel;assembly=MikiraSora.VirtualizingStaggeredPanel"
     Title="EHentaiCommentListPage"
     mc:Ignorable="d">
     <Page.DataContext>
@@ -67,45 +68,6 @@
             </Button>
         </StackPanel>
 
-        <ScrollViewer
-            x:Name="ScrollViewer"
-            Grid.Row="1"
-            PreviewMouseWheel="ScrollViewer_MouseWheel"
-            ScrollChanged="OnScrollChanged">
-            <ItemsControl x:Name="PreviewImageList" ItemsSource="{Binding PreviewImages}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <panels:GridFlowPanel
-                            Width="{Binding ActualWidth, ElementName=PreviewImageList}"
-                            GridItemMarginWidth="{Binding GridItemMarginWidth}"
-                            GridItemWidth="{Binding GridItemWidth}" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Margin="5">
-                            <Border
-                                Name="GalleryImageBorder"
-                                Width="{Binding DataContext.GridItemWidth, ElementName=PreviewImageList}"
-                                Background="#3FFFFFFF">
-                                <Border.Height>
-                                    <MultiBinding Converter="{StaticResource AutoFitHeightConverter}">
-                                        <Binding Path="PreviewImageSize" />
-                                        <Binding ElementName="PreviewImageList" Path="DataContext.GridItemWidth" />
-                                    </MultiBinding>
-                                </Border.Height>
-                                <Image
-                                    Name="GalleryImage"
-                                    Width="{Binding Width, ElementName=GalleryImageBorder}"
-                                    Height="{Binding Height, ElementName=GalleryImageBorder}"
-                                    DataContext="{Binding ImageAsync, Converter={StaticResource ImageAsyncLoadingConverter}}"
-                                    Source="{Binding AsyncValue}" />
-                            </Border>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
 
         <Popup
             Name="PageJumpPopup"
@@ -140,5 +102,51 @@
                 </Button>
             </StackPanel>
         </Popup>
+
+        <ItemsControl
+            x:Name="PreviewImageList"
+            Grid.Row="1"
+            ItemsSource="{Binding PreviewImages}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <virtualizingstaggeredpanel:VirtualizingStaggeredPanel GridItemWidth="{Binding GridItemWidth}" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.Template>
+                <ControlTemplate TargetType="{x:Type ItemsControl}">
+                    <!--  Add the ScrollViewer here, inside the ControlTemplate  -->
+                    <ScrollViewer
+                        CanContentScroll="True"
+                        MouseWheel="ScrollViewer_MouseWheel"
+                        ScrollChanged="OnScrollChanged">
+                        <!--  Your items will be added here  -->
+                        <ItemsPresenter />
+                    </ScrollViewer>
+                </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="5">
+                        <Border
+                            Name="GalleryImageBorder"
+                            Width="{Binding DataContext.GridItemWidth, ElementName=PreviewImageList}"
+                            Background="#3FFFFFFF">
+                            <Border.Height>
+                                <MultiBinding Converter="{StaticResource AutoFitHeightConverter}">
+                                    <Binding Path="PreviewImageSize" />
+                                    <Binding ElementName="PreviewImageList" Path="DataContext.GridItemWidth" />
+                                </MultiBinding>
+                            </Border.Height>
+                            <Image
+                                Name="GalleryImage"
+                                Width="{Binding Width, ElementName=GalleryImageBorder}"
+                                Height="{Binding Height, ElementName=GalleryImageBorder}"
+                                DataContext="{Binding ImageAsync, Converter={StaticResource ImageAsyncLoadingConverter}}"
+                                Source="{Binding AsyncValue}" />
+                        </Border>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </Page>

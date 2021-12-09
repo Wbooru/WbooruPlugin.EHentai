@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MikiraSora.VirtualizingStaggeredPanel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,5 +18,23 @@ namespace WbooruPlugin.EHentai.UI
     public class ImageInfo<T> : ImageInfo
     {
         public T Param { get; set; }
+    }
+
+    public class DetailImageInfo : ImageInfo<(int ReferencePageIndex, string url)>, IVirtualGridFlowPanelItemParam
+    {
+        public double AspectRatio
+        {
+            get
+            {
+                return 1.0 * PreviewImageSize.Width / PreviewImageSize.Height;
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool __HasInserted { get; set; }
+        public int __ItemIndex { get; set; }
     }
 }

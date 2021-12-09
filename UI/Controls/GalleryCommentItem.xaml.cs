@@ -70,7 +70,7 @@ namespace WbooruPlugin.EHentai.UI.Controls
 
                 while (true)
                 {
-                    (var _, var match, var run, var inlines) = ViusalTreeHelperEx.GetAllRecursively<Run>(xamlControls).Select(sr =>
+                    (var _, var match, var run, var inlines) = LogicalTreeHelperEx.GetAllRecursively<Run>(xamlControls).Select(sr =>
                     {
                         var match = urlRegex.Match(sr.Text);
                         return (match.Success, match, sr, (sr.Parent as Paragraph)?.Inlines);
@@ -134,7 +134,7 @@ namespace WbooruPlugin.EHentai.UI.Controls
                 }
 
                 //make Hyperlink objects clickable
-                foreach (var link in ViusalTreeHelperEx.GetAllRecursively<Hyperlink>(xamlControls))
+                foreach (var link in LogicalTreeHelperEx.GetAllRecursively<Hyperlink>(xamlControls))
                 {
                     link.Foreground = Brushes.White;
                     //link.PreviewMouseDown += Link_PreviewMouseDown;

@@ -1,5 +1,6 @@
 ﻿using EHentaiAPI.Client;
 using EHentaiAPI.Client.Data;
+using MikiraSora.VirtualizingStaggeredPanel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,11 +24,10 @@ using Wbooru.Models;
 using Wbooru.Settings;
 using Wbooru.UI.Controls;
 using Wbooru.UI.ValueConverters;
+using Wbooru.Utils;
 
 namespace WbooruPlugin.EHentai.UI.Pages
 {
-    using ImageInfoEx = ImageInfo<(int ReferencePageIndex, string url)>;
-
     /// <summary>
     /// EHentaiCommentListPage.xaml 的交互逻辑
     /// </summary>
@@ -81,7 +81,7 @@ namespace WbooruPlugin.EHentai.UI.Pages
         public PageRange LoadedPagesRange { get; set; } = new();
         private Task pullingTask;
 
-        public ObservableCollection<ImageInfoEx> PreviewImages { get; } = new();
+        public ObservableCollection<DetailImageInfo> PreviewImages { get; } = new();
 
         public EHentaiGalleryImageListPage(EhClient client, GalleryDetail detail)
         {
@@ -96,39 +96,53 @@ namespace WbooruPlugin.EHentai.UI.Pages
             NavigationHelper.NavigationPop();
         }
 
-        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-
-        }
-
         private async void ScrollViewer_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            var height = (sender as ScrollViewer).ScrollableHeight;
+            var scrollViewer = (sender as ScrollViewer);
+            var verticalOffset = scrollViewer.VerticalOffset;
 
-            if (e.Delta > 0 && height == 0)
-                await TryReadMore(false);
+            if (e.Delta > 0 && verticalOffset == 0)
+                await TryReadBefore();
         }
 
         private async void OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            Log.Debug($"e.ViewportHeightChange : {e.VerticalOffset}");
             var height = (sender as ScrollViewer).ScrollableHeight;
             var at_end = e.VerticalOffset >= height;
 
             if (at_end)
                 await TryReadMore();
+            else if (e.VerticalChange < 0 && e.VerticalOffset == 0)
+                await TryReadBefore();
+
+            Log.Debug($"Scroll Changed, VerticalOffset : {e.VerticalOffset} , e : {e.VerticalChange}");
         }
 
-        private async Task TryReadMore(bool isLoadNextPage = true)
+        private async Task TryReadBefore()
+        {
+            var beforePosItem = PreviewImages.FirstOrDefault();
+
+            //如果实际有东西添加了就滚回一下
+            if (await TryReadMore(false))
+            {
+                if (beforePosItem is DetailImageInfo info)
+                {
+                    var refContainer = PreviewImageList.ItemContainerGenerator.ContainerFromItem(info) as FrameworkElement;
+                    refContainer.BringIntoView();
+                }
+            }
+        }
+
+        private async Task<bool> TryReadMore(bool isLoadNextPage = true)
         {
             if (pullingTask != null)
-                return;
-            var taskSource = new TaskCompletionSource();
+                return false;
+            var taskSource = new TaskCompletionSource<bool>();
             pullingTask = taskSource.Task;
 
             Log.Debug($"Begin try read more , Range : {LoadedPagesRange} , isLoadNextPage : {isLoadNextPage}");
 
-            static ImageInfoEx Parse(GalleryPreview preview, int referencePageIndex)
+            static DetailImageInfo Parse(GalleryPreview preview, int referencePageIndex)
             {
                 var match = imageSizeParser.Match(preview.ImageUrl);
                 if (match.Success)
@@ -160,9 +174,9 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 {
                     Log.Debug($"No more images provided. PageEnd : {LoadedPagesRange.PageEnd} >= {Detail.PreviewPages}");
                     Toast.ShowMessage("no more");
-                    taskSource.SetResult();
+                    taskSource.SetResult(false);
                     pullingTask = null;
-                    return;
+                    return false;
                 }
             }
             else
@@ -170,9 +184,9 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 if (LoadedPagesRange.PageStart <= 0)
                 {
                     Log.Debug($"No more images provided. PageStart : {LoadedPagesRange.PageStart} <= 0");
-                    taskSource.SetResult();
+                    taskSource.SetResult(false);
                     pullingTask = null;
-                    return;
+                    return false;
                 }
             }
 
@@ -186,31 +200,32 @@ namespace WbooruPlugin.EHentai.UI.Pages
                     for (int i = 0; i < item.Key.Size; i++)
                     {
                         var preview = item.Key.GetGalleryPreview(Detail.Gid, i);
-                        if (Parse(preview, LoadedPagesRange.PageEnd) is ImageInfoEx info)
+                        if (Parse(preview, LoadedPagesRange.PageEnd) is DetailImageInfo info)
                             PreviewImages.Add(info);
                     }
                 }
             }
             else
             {
-                var item = await client.GetPreviewSetAsync(Detail, LoadedPagesRange.PageStart);
+                var item = await client.GetPreviewSetAsync(Detail, LoadedPagesRange.PageStart - 1);
 
                 if (item.Value != 0)
                 {
                     LoadedPagesRange.PageStart--;
 
-                    for (int i = 0; i < item.Key.Size; i++)
+                    for (int i = item.Key.Size - 1; i >= 0; i--)
                     {
                         var preview = item.Key.GetGalleryPreview(Detail.Gid, i);
-                        if (Parse(preview, LoadedPagesRange.PageStart) is ImageInfoEx info)
+                        if (Parse(preview, LoadedPagesRange.PageStart) is DetailImageInfo info)
                             PreviewImages.Insert(0, info);
                     }
                 }
             }
 
-            taskSource.SetResult();
+            taskSource.SetResult(true);
             Log.Debug($"Page Range : {LoadedPagesRange}");
             pullingTask = null;
+            return true;
         }
 
         private void PageJumpLabel_Click(object sender, RoutedEventArgs e)
@@ -235,10 +250,13 @@ namespace WbooruPlugin.EHentai.UI.Pages
             {
                 Log.Debug($"targetStartPage in LoadedPagesRange {LoadedPagesRange}");
                 //在已读范围内，可以计算跳转
-                if (PreviewImages.FirstOrDefault(x => x.Param.ReferencePageIndex == targetStartPage) is ImageInfoEx info)
+                if (PreviewImages.FirstOrDefault(x => x.Param.ReferencePageIndex == targetStartPage) is DetailImageInfo info)
                 {
-                    var refContainer = PreviewImageList.ItemContainerGenerator.ContainerFromItem(info) as FrameworkElement;
-                    refContainer.BringIntoView();
+                    if (VisualTreeHelperEx.GetAllRecursively<VirtualizingStaggeredPanel>(PreviewImageList).FirstOrDefault() is VirtualizingStaggeredPanel panel)
+                    {
+                        if (panel.FindScrollOffsetByItem(info) is double offset)
+                            panel.ScrollOwner?.ScrollToVerticalOffset(offset);
+                    }
                 }
             }
             else
