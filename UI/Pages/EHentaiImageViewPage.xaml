@@ -1,0 +1,168 @@
+﻿<Page
+    x:Class="WbooruPlugin.EHentai.UI.Pages.EHentaiImageViewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Wbooru.UI.Controls;assembly=Wbooru"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WbooruPlugin.EHentai.UI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="EHentaiImageViewPage"
+    Background="{StaticResource ContentBackgroundColor}"
+    mc:Ignorable="d">
+
+    <Page.DataContext>
+        <Binding RelativeSource="{RelativeSource Self}">
+        </Binding>
+    </Page.DataContext>
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../BaseResourceDictionary.xaml">
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid>
+        <controls:LoadingStatusDisplayer
+            x:Name="LoadingStatus"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        </controls:LoadingStatusDisplayer>
+        <controls:ImageViewer
+            x:Name="DetailImageBox"
+            Grid.Row="1"
+            Panel.ZIndex="-1"
+            d:Visibility="Hidden"
+            AnimationTime="00:00:00.3"
+            Background="Transparent"
+            DefaultRatios="0,1,2,4"
+            MaxScale="5"
+            MinScale="1"
+            ScaleCount="12">
+
+            <controls:ImageViewer.ContextMenu>
+                <ContextMenu>
+                    <ContextMenu.Style>
+                        <Style TargetType="{x:Type ContextMenu}">
+                            <Setter Property="OverridesDefaultStyle" Value="True" />
+                            <Setter Property="SnapsToDevicePixels" Value="True" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                                        <Border
+                                            Background="{StaticResource ContentBackgroundColor_LowTransparent}"
+                                            BorderBrush="White"
+                                            BorderThickness="1">
+                                            <StackPanel
+                                                ClipToBounds="True"
+                                                IsItemsHost="True"
+                                                Orientation="Vertical" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ContextMenu.Style>
+                    <ContextMenu.Resources>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Padding" Value="5,10,5,10" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="FontSize" Value="14" />
+                            <Setter Property="Icon">
+                                <Setter.Value>
+                                    <Grid Background="Transparent">
+                                    </Grid>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ContextMenu.Resources>
+
+                    <MenuItem Click="MenuItem_Click" Header="复制">
+                    </MenuItem>
+
+                    <MenuItem Click="MenuItem_Click_1" Header="更换图片尺寸大小">
+                    </MenuItem>
+                </ContextMenu>
+            </controls:ImageViewer.ContextMenu>
+        </controls:ImageViewer>
+
+        <Button
+            Width="75"
+            Margin="20,5,0,5"
+            HorizontalAlignment="Left"
+            Background="Transparent"
+            BorderBrush="#30FFFFFF"
+            Click="Button_Click_1"
+            Focusable="False"
+            Foreground="White">
+            <Button.Style>
+                <Style BasedOn="{StaticResource ButtonMouseOverStyle}" TargetType="Button">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.5">
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="False">
+                            <Setter Property="Opacity" Value="0.0">
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+            <TextBlock
+                FontFamily="Segoe UI Symbol"
+                FontSize="60"
+                Opacity="0.5">
+                <TextBlock.RenderTransform>
+                    <TranslateTransform Y="-8">
+                    </TranslateTransform>
+                </TextBlock.RenderTransform>
+                ⬅
+            </TextBlock>
+        </Button>
+
+        <Button
+            Width="75"
+            Margin="0,5,20,5"
+            HorizontalAlignment="Right"
+            Background="Transparent"
+            BorderBrush="#30FFFFFF"
+            Click="Button_Click"
+            Focusable="False"
+            Foreground="White">
+            <Button.Style>
+                <Style BasedOn="{StaticResource ButtonMouseOverStyle}" TargetType="Button">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.5">
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="False">
+                            <Setter Property="Opacity" Value="0.0">
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+            <TextBlock
+                FontFamily="Segoe UI Symbol"
+                FontSize="60"
+                Opacity="0.5">
+                <TextBlock.RenderTransformOrigin>
+                    <Point X="0.5" Y="0.5">
+                    </Point>
+                </TextBlock.RenderTransformOrigin>
+                <TextBlock.RenderTransform>
+                    <TransformGroup>
+                        <RotateTransform Angle="180">
+                        </RotateTransform>
+                        <TranslateTransform Y="1">
+                        </TranslateTransform>
+                    </TransformGroup>
+                </TextBlock.RenderTransform>
+                ⬅
+            </TextBlock>
+        </Button>
+    </Grid>
+</Page>

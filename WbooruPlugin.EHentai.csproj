@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <LangVersion>preview</LangVersion>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,16 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="VirtualizingStaggeredPanel" Version="0.0.7" />
+    <PackageReference Include="EHentaiAPI" Version="0.6.6" />
+    <PackageReference Include="VirtualizingStaggeredPanel" Version="0.0.9" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Wbooru\Wbooru.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime;native</ExcludeAssets>
-    </ProjectReference>
-    <ProjectReference Include="C:\Users\mikir\source\repos\EHentaiAPI\EHentaiAPI\EHentaiAPI.csproj">
-      
     </ProjectReference>
     <ProjectReference Include="Dependencies\HtmlToXamlConverter\src\HtmlToXamlConverter\HtmlToXamlConverter.csproj" />
   </ItemGroup>

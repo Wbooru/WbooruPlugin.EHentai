@@ -429,25 +429,27 @@
                 </ItemsControl.Template>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Margin="5">
-                            <Border
-                                Name="GalleryImageBorder"
-                                Width="{Binding DataContext.GridItemWidth, ElementName=PreviewImageList}"
-                                Background="#3FFFFFFF">
-                                <Border.Height>
-                                    <MultiBinding Converter="{StaticResource AutoFitHeightConverter}">
-                                        <Binding Path="PreviewImageSize" />
-                                        <Binding ElementName="PreviewImageList" Path="DataContext.GridItemWidth" />
-                                    </MultiBinding>
-                                </Border.Height>
-                                <Image
-                                    Name="GalleryImage"
-                                    Width="{Binding Width, ElementName=GalleryImageBorder}"
-                                    Height="{Binding Height, ElementName=GalleryImageBorder}"
-                                    DataContext="{Binding ImageAsync, Converter={StaticResource ImageAsyncLoadingConverter}}"
-                                    Source="{Binding AsyncValue}" />
-                            </Border>
-                        </StackPanel>
+                        <Grid
+                            Name="GalleryImageBorder"
+                            Width="{Binding DataContext.GridItemWidth, ElementName=PreviewImageList}"
+                            Margin="5"
+                            Background="#3FFFFFFF">
+                            <Grid.Height>
+                                <MultiBinding Converter="{StaticResource AutoFitHeightConverter}">
+                                    <Binding Path="PreviewImageSize" />
+                                    <Binding ElementName="PreviewImageList" Path="DataContext.GridItemWidth" />
+                                </MultiBinding>
+                            </Grid.Height>
+                            <Image
+                                Name="GalleryImage"
+                                Width="{Binding Width, ElementName=GalleryImageBorder}"
+                                Height="{Binding Height, ElementName=GalleryImageBorder}"
+                                DataContext="{Binding ImageAsync, Converter={StaticResource ImageAsyncLoadingConverter}}"
+                                Source="{Binding AsyncValue}" />
+
+                            <Button BorderThickness="5" Click="Button_Click_2">
+                            </Button>
+                        </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -1,5 +1,6 @@
 ﻿using EHentaiAPI.Client;
 using EHentaiAPI.Client.Data;
+using EHentaiAPI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,6 +27,7 @@ using Wbooru.UI.Controls;
 using Wbooru.UI.Dialogs;
 using Wbooru.UI.Pages;
 using Wbooru.UI.ValueConverters;
+using Wbooru.Utils.Resource;
 using WbooruPlugin.EHentai.UI.Controls;
 using WbooruPlugin.EHentai.UI.Dialogs;
 
@@ -42,6 +44,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
         public uint GridItemMarginWidth => Setting<GlobalSetting>.Current.PictureGridItemMarginWidth;
 
         public ObservableCollection<ImageInfo> PreviewImages { get; } = new();
+
+        private EhPageImageSpider<System.Drawing.Image> spider;
 
         public EHentaiImageGalleryImageDetail Detail
         {
@@ -97,8 +101,18 @@ namespace WbooruPlugin.EHentai.UI.Pages
             }
 
             Detail = gallery.GetImageDetial(info) as EHentaiImageGalleryImageDetail;
-
             Log.Debug($"Thumb = {Detail.Detail.Thumb}");
+
+            this.spider = new EhPageImageSpider<System.Drawing.Image>(client, Detail.Detail, async (url, reporter) =>
+            {
+                var image = await ImageResourceManager.RequestImageAsync(url, url, false, curDLStatus =>
+                {
+                    reporter.CurrentDownloadingLength = curDLStatus.downloaded_bytes;
+                    if (curDLStatus.content_bytes != reporter.CurrentDownloadingLength)
+                        reporter.CurrentDownloadingLength = curDLStatus.content_bytes;
+                });
+                return image;
+            });
 
             //动态计算几条预览评论
             //限制显示5个评论或者总添加超过300的
@@ -139,7 +153,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
 
             for (int r = 0; r < Math.Min(list.Key.Size, previewImagesCount); r++)
             {
-                var imageUrl = list.Key.GetGalleryPreview(Detail.Detail.Gid, r)?.ImageUrl ?? "";
+                var preview = list.Key.GetGalleryPreview(Detail.Detail.Gid, r);
+                var imageUrl = preview?.ImageUrl ?? "";
                 var match = imageSizeParser.Match(imageUrl);
                 if (match.Success)
                 {
@@ -157,7 +172,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
                         {
                             ImageUrl = imageUrl,
                             PreviewImageDownloadUrl = imageUrl
-                        }
+                        },
+                        Preview = preview
                     });
                 }
             }
@@ -176,7 +192,7 @@ namespace WbooruPlugin.EHentai.UI.Pages
         private void TextBlock_MouseDown_1(object sender, MouseButtonEventArgs e)
         {
             //查看列表
-            NavigationHelper.NavigationPush(new EHentaiGalleryImageListPage(client, Detail.Detail));
+            NavigationHelper.NavigationPush(new EHentaiGalleryImageListPage(client, Detail.Detail, this.spider));
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
@@ -206,6 +222,14 @@ namespace WbooruPlugin.EHentai.UI.Pages
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
             NavigationHelper.NavigationPop();
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.DataContext is not ImageInfo imageInfo)
+                return;
+
+            NavigationHelper.NavigationPush(new EHentaiImageViewPage(Detail.Detail, imageInfo.Preview, spider));
         }
     }
 }

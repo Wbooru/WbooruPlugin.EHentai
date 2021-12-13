@@ -1,5 +1,6 @@
 ﻿using EHentaiAPI.Client;
 using EHentaiAPI.Client.Data;
+using EHentaiAPI.Utils;
 using MikiraSora.VirtualizingStaggeredPanel;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ using Wbooru.Settings;
 using Wbooru.UI.Controls;
 using Wbooru.UI.ValueConverters;
 using Wbooru.Utils;
+using Wbooru.Utils.Resource;
 
 namespace WbooruPlugin.EHentai.UI.Pages
 {
@@ -75,6 +77,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
         private readonly EhClient client;
         public GalleryDetail Detail { get; init; }
 
+        private readonly EhPageImageSpider<System.Drawing.Image> spider;
+
         public uint GridItemWidth => Setting<GlobalSetting>.Current.PictureGridItemWidth;
         public uint GridItemMarginWidth => Setting<GlobalSetting>.Current.PictureGridItemMarginWidth;
         public int PullImagesCount => Setting<GlobalSetting>.Current.GetPictureCountPerLoad;
@@ -83,10 +87,11 @@ namespace WbooruPlugin.EHentai.UI.Pages
 
         public ObservableCollection<DetailImageInfo> PreviewImages { get; } = new();
 
-        public EHentaiGalleryImageListPage(EhClient client, GalleryDetail detail)
+        public EHentaiGalleryImageListPage(EhClient client, GalleryDetail detail, EhPageImageSpider<System.Drawing.Image> spider)
         {
             this.client = client;
             this.Detail = detail;
+            this.spider = spider;
 
             InitializeComponent();
         }
@@ -125,10 +130,13 @@ namespace WbooruPlugin.EHentai.UI.Pages
             //如果实际有东西添加了就滚回一下
             if (await TryReadMore(false))
             {
-                if (beforePosItem is DetailImageInfo info)
+                if (beforePosItem is DetailImageInfo info && VisualTreeHelperEx.GetAllRecursively<VirtualizingStaggeredPanel>(PreviewImageList).FirstOrDefault() is VirtualizingStaggeredPanel panel)
                 {
-                    var refContainer = PreviewImageList.ItemContainerGenerator.ContainerFromItem(info) as FrameworkElement;
-                    refContainer.BringIntoView();
+                    if (panel.FindScrollOffsetByItem(info) is double offset)
+                    {
+                        Log.Debug($"beforePosItem PageIndex:{beforePosItem.PageIndex} , scroll offset:{offset}");
+                        panel.ScrollOwner?.ScrollToVerticalOffset(offset);
+                    }
                 }
             }
         }
@@ -157,12 +165,9 @@ namespace WbooruPlugin.EHentai.UI.Pages
                             ImageUrl = preview.ImageUrl,
                             PreviewImageDownloadUrl = preview.ImageUrl
                         },
-                        PreviewImageSize = new ImageSize()
-                        {
-                            Width = width,
-                            Height = height
-                        },
-                        Param = (referencePageIndex, preview.ImageUrl),
+                        AspectRatio = 1.0d * width / height,
+                        ReferencePagesIndex = referencePageIndex,
+                        Preview = preview
                     };
                 }
                 return default;
@@ -244,19 +249,19 @@ namespace WbooruPlugin.EHentai.UI.Pages
             if (pullingTask != null)
                 await pullingTask;
 
+            if (VisualTreeHelperEx.GetAllRecursively<VirtualizingStaggeredPanel>(PreviewImageList).FirstOrDefault() is not VirtualizingStaggeredPanel panel)
+                return;
+
             var targetStartPage = Math.Max(1, Math.Min(Detail.PreviewPages, int.Parse(JumpPageInput.Text)));
 
             if (LoadedPagesRange.PageStart <= targetStartPage && targetStartPage <= LoadedPagesRange.PageEnd)
             {
                 Log.Debug($"targetStartPage in LoadedPagesRange {LoadedPagesRange}");
                 //在已读范围内，可以计算跳转
-                if (PreviewImages.FirstOrDefault(x => x.Param.ReferencePageIndex == targetStartPage) is DetailImageInfo info)
+                if (PreviewImages.FirstOrDefault(x => x.ReferencePagesIndex == targetStartPage) is DetailImageInfo info)
                 {
-                    if (VisualTreeHelperEx.GetAllRecursively<VirtualizingStaggeredPanel>(PreviewImageList).FirstOrDefault() is VirtualizingStaggeredPanel panel)
-                    {
-                        if (panel.FindScrollOffsetByItem(info) is double offset)
-                            panel.ScrollOwner?.ScrollToVerticalOffset(offset);
-                    }
+                    if (panel.FindScrollOffsetByItem(info) is double offset)
+                        panel.ScrollOwner?.ScrollToVerticalOffset(offset);
                 }
             }
             else
@@ -264,8 +269,18 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 //钦定新的
                 LoadedPagesRange = new() { PageStart = targetStartPage - 1, PageEnd = targetStartPage - 1 };
                 PreviewImages.Clear();
+                panel?.ForceRefreshContainItems();
+
                 await TryReadMore();
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.DataContext is not DetailImageInfo imageInfo)
+                return;
+
+            NavigationHelper.NavigationPush(new EHentaiImageViewPage(Detail, imageInfo.Preview, this.spider));
         }
     }
 }

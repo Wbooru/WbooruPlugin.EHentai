@@ -34,7 +34,7 @@ namespace WbooruPlugin.EHentai
         {
             client = new EhClient();
             Request.RequestFactory = (url) => new EHentaiRequest(url);
-            client.Settings.PutGallerySite(EhUrl.SITE_E);
+            client.Settings.GallerySite = Settings.GallerySites.SITE_E;
             //强制钦定一下列表样式
             client.Cookies.Add(new System.Net.Cookie("sl", "dm_1", "/", "e-hentai.org"));
         }
