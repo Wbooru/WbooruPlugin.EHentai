@@ -195,15 +195,20 @@ namespace WbooruPlugin.EHentai.UI.Pages
             NavigationHelper.NavigationPush(new EHentaiGalleryImageListPage(client, Detail.Detail, this.spider));
         }
 
+        private void ForceRefreshDetail()
+        {
+            var d = Detail;
+            Detail = null;
+            Detail = d;
+            //InvalidateProperty(DetailProperty);
+        }
+
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             //收藏管理
             var dialog = new FavoriteSelectDialog(client, Detail);
             await Dialog.ShowDialog(dialog);
-            var d = Detail;
-            Detail = null;
-            Detail = d;
-            //InvalidateProperty(DetailProperty);
+            ForceRefreshDetail();
         }
 
         private async void TextBlock_MouseDown_2(object sender, MouseButtonEventArgs e)
@@ -230,6 +235,13 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 return;
 
             NavigationHelper.NavigationPush(new EHentaiImageViewPage(Detail.Detail, imageInfo.Preview, spider));
+        }
+
+        private async void FavoriteStarsDisplayer_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var dialog = new RateGalleryDialog(client, Detail);
+            await Dialog.ShowDialog(dialog);
+            ForceRefreshDetail();
         }
     }
 }

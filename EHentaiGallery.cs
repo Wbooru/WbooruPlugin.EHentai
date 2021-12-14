@@ -26,14 +26,16 @@ namespace WbooruPlugin.EHentai
 
         public override string GalleryName => "EHentai";
 
-        public bool IsLoggined => client.Cookies.GetCookies(new System.Uri(client.EhUrl.GetHost()))?.Any(x => x.Name.Equals("ipb_pass_hash", System.StringComparison.InvariantCultureIgnoreCase) || x.Name.Equals("ipb_member_id", System.StringComparison.InvariantCultureIgnoreCase)) ?? false;
+        public bool IsLoggined => client.Cookies.GetCookies(new Uri(client.EhUrl.GetHost()))?.Any(x => x.Name.Equals("ipb_pass_hash", System.StringComparison.InvariantCultureIgnoreCase) || x.Name.Equals("ipb_member_id", System.StringComparison.InvariantCultureIgnoreCase)) ?? false;
 
         public CustomLoginPage CustomLoginPage => new DefaultLoginPage(this);
 
         public EHentaiGallery()
         {
             client = new EhClient();
-            Request.RequestFactory = (url) => new EHentaiRequest(url);
+            client.Settings.SharedPreferences = Setting<EhentaiSetting>.Current;
+
+            Request.RequestFactory = url => new EHentaiRequest(url);
             client.Settings.GallerySite = Settings.GallerySites.SITE_E;
             //强制钦定一下列表样式
             client.Cookies.Add(new System.Net.Cookie("sl", "dm_1", "/", "e-hentai.org"));

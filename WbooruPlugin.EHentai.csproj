@@ -29,6 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="UI\Dialogs\RateGalleryDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="UI\Dialogs\TorrentsSelectDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -41,6 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="UI\Dialogs\RateGalleryDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="UI\Dialogs\TorrentsSelectDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>

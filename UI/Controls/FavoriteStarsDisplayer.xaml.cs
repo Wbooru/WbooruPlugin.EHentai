@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Wbooru;
 
 namespace WbooruPlugin.EHentai.UI.Controls
 {
@@ -20,6 +21,16 @@ namespace WbooruPlugin.EHentai.UI.Controls
     /// </summary>
     public partial class FavoriteStarsDisplayer : UserControl
     {
+        public bool Clickable
+        {
+            get { return (bool)GetValue(ClickableProperty); }
+            set { SetValue(ClickableProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Clickable.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ClickableProperty =
+            DependencyProperty.Register("Clickable", typeof(bool), typeof(FavoriteStarsDisplayer), new PropertyMetadata(false));
+
         public float Stars
         {
             get { return (float)GetValue(StarsProperty); }
@@ -34,6 +45,15 @@ namespace WbooruPlugin.EHentai.UI.Controls
         {
             InitializeComponent();
             MainPanel.DataContext = this;
+        }
+
+        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.Source is not TextBlock t)
+                return;
+            var p = e.GetPosition(t);
+            var stars = int.Parse(t.Name.Replace("Star","")) + (p.X < t.ActualWidth / 2 ? 0.5f : 1);
+            Stars = stars;
         }
     }
 }

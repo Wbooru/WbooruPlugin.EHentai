@@ -188,10 +188,15 @@
                         </ColumnDefinition>
                     </Grid.ColumnDefinitions>
 
-                    <Button VerticalAlignment="Bottom" Click="Button_Click">
+                    <Button
+                        Width="60"
+                        Height="100"
+                        Click="Button_Click">
                         <StackPanel>
                             <Label
+                                Height="75"
                                 HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
                                 d:Content=""
                                 d:Foreground="White"
                                 FontFamily="Segoe UI Symbol"
@@ -239,13 +244,20 @@
                     </Button>
                     <Button
                         Grid.Column="1"
-                        VerticalAlignment="Bottom"
+                        Width="60"
+                        Height="100"
                         Click="Button_Click_1">
                         <StackPanel>
                             <Label
+                                Height="75"
+                                VerticalAlignment="Bottom"
                                 FontFamily="Segoe UI Symbol"
                                 FontSize="50"
                                 Foreground="White">
+                                <Label.RenderTransform>
+                                    <TranslateTransform Y="-13">
+                                    </TranslateTransform>
+                                </Label.RenderTransform>
                                 
                             </Label>
                             <TextBlock HorizontalAlignment="Center">种子</TextBlock>
@@ -253,7 +265,19 @@
                     </Button>
                     <!--  后面再补  -->
                 </Grid>
-                <controls:FavoriteStarsDisplayer HorizontalContentAlignment="Center" Stars="{Binding Detail.Detail.Rating}">
+                <controls:FavoriteStarsDisplayer
+                    HorizontalContentAlignment="Center"
+                    MouseDown="FavoriteStarsDisplayer_MouseDown"
+                    Stars="{Binding Detail.Detail.Rating}">
+                    <controls:FavoriteStarsDisplayer.Style>
+                        <Style TargetType="controls:FavoriteStarsDisplayer">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Cursor" Value="Hand" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </controls:FavoriteStarsDisplayer.Style>
                 </controls:FavoriteStarsDisplayer>
                 <TextBlock
                     HorizontalAlignment="Center"

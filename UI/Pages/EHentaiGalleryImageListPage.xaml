@@ -68,7 +68,6 @@
             </Button>
         </StackPanel>
 
-
         <Popup
             Name="PageJumpPopup"
             AllowsTransparency="True"
