@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Wbooru.Kernel;
 using Wbooru.UI.Controls;
 using Wbooru.Utils;
 using Wbooru.Utils.Resource;
@@ -144,6 +145,11 @@ namespace WbooruPlugin.EHentai.UI.Pages
             }
 
             Preview = preview;
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationHelper.NavigationPop();
         }
     }
 }

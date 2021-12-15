@@ -164,5 +164,54 @@
                 ⬅
             </TextBlock>
         </Button>
+
+        <Border
+            Height="125"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="1">
+                            </Setter>
+                            <Setter Property="Background" Value="Transparent">
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="False">
+                            <Setter Property="Opacity" Value="0.0">
+                            </Setter>
+                            <Setter Property="Background" Value="#01FFFFFF">
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid Height="{StaticResource BoardHeaderHeight}" VerticalAlignment="Top">
+                <Grid Background="{StaticResource BoardColor}" Opacity="0.75">
+                </Grid>
+
+                <StackPanel Orientation="Horizontal">
+                    <controls:MenuButton
+                        ButtonBase.Click="MenuButton_Click"
+                        ContentMargin="5,0,0,0"
+                        Icon=""
+                        Text="返回" />
+
+                    <TextBlock
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="Bold">
+                        <Run Text="{Binding Preview.Position}">
+                        </Run>
+                        <Run Text="/">
+                        </Run>
+                        <Run Text="{Binding GalleryDetail.Pages}">
+                        </Run>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

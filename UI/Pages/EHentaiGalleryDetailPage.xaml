@@ -295,7 +295,7 @@
                     Foreground="Gray"
                     Opacity="0.5">
                 </Separator>
-                <ItemsControl ItemsSource="{Binding Detail.Detail.Tags}">
+                <ItemsControl ItemsSource="{Binding Tags}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,10,0,0">
@@ -309,12 +309,12 @@
                                     Margin="0,5,0,0"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
-                                    Text="{Binding TagGroupName, StringFormat={}{0} :}">
+                                    Text="{Binding Name, StringFormat={}{0} :}">
                                 </TextBlock>
                                 <ItemsControl
                                     Grid.Column="1"
                                     Margin="10,0,0,0"
-                                    ItemsSource="{Binding TagList}">
+                                    ItemsSource="{Binding Tags}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <WrapPanel>
@@ -323,15 +323,54 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Button>
-                                                <Border
-                                                    Margin="5,0,5,0"
-                                                    Background="DimGray"
-                                                    BorderThickness="1"
-                                                    CornerRadius="5">
-                                                    <TextBlock Padding="10,5,10,5" Text="{Binding .}">
+                                            <Button
+                                                Margin="5"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                BorderThickness="2"
+                                                Click="Button_Click_3">
+                                                <Button.ContextMenu>
+                                                    <controls1:CustomStyleContextMenu>
+                                                        <MenuItem Click="MenuItem_Click_1" Header="查看此标签定义">
+                                                        </MenuItem>
+                                                        <MenuItem d:Header="收藏此标签" Click="MenuItem_Click">
+                                                            <MenuItem.Resources>
+                                                                <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="MenuItem">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Mark}" Value="True">
+                                                                            <Setter Property="Header" Value="取消收藏此标签">
+                                                                            </Setter>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Mark}" Value="False">
+                                                                            <Setter Property="Header" Value="收藏此标签">
+                                                                            </Setter>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </MenuItem.Resources>
+                                                        </MenuItem>
+                                                        <MenuItem Click="MenuItem_Click_2" Header="搜索所选标签的画廊">
+                                                        </MenuItem>
+                                                    </controls1:CustomStyleContextMenu>
+                                                </Button.ContextMenu>
+                                                <Border BorderBrush="#20FFFFFF" BorderThickness="1">
+                                                    <TextBlock Padding="10,5,10,5" Text="{Binding Name}">
                                                     </TextBlock>
                                                 </Border>
+                                                <Button.Style>
+                                                    <Style BasedOn="{StaticResource ButtonMouseOverStyle}" TargetType="Button">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Check}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="Pink">
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Check}" Value="False">
+                                                                <Setter Property="BorderBrush" Value="Transparent">
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
                                             </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

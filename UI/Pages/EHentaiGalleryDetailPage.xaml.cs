@@ -4,7 +4,10 @@ using EHentaiAPI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -30,6 +33,7 @@ using Wbooru.UI.ValueConverters;
 using Wbooru.Utils.Resource;
 using WbooruPlugin.EHentai.UI.Controls;
 using WbooruPlugin.EHentai.UI.Dialogs;
+using WbooruPlugin.EHentai.Utils;
 
 namespace WbooruPlugin.EHentai.UI.Pages
 {
@@ -38,6 +42,44 @@ namespace WbooruPlugin.EHentai.UI.Pages
     /// </summary>
     public partial class EHentaiGalleryDetailPage : DetailImagePageBase
     {
+        public class TagGroup
+        {
+            public string Name { get; set; }
+            public List<TagItem> Tags { get; set; } = new List<TagItem>();
+        }
+
+        public class TagItem : INotifyPropertyChanged
+        {
+            public string Name { get; set; }
+            public TagGroup RefGroup { get; set; }
+
+            private bool check { get; set; }
+            public bool Check
+            {
+                get { return check; }
+                set
+                {
+                    check = value;
+                    PropertyChanged?.Invoke(this, new(nameof(Check)));
+                }
+            }
+
+            private bool marked { get; set; }
+            public bool Mark
+            {
+                get { return marked; }
+                set
+                {
+                    marked = value;
+                    PropertyChanged?.Invoke(this, new(nameof(Mark)));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+        }
+
+        public ObservableCollection<TagGroup> Tags { get; } = new();
+
         private static Regex imageSizeParser = new Regex(@"(\d+)-(\d+)(-\w*)?\.\w+");
 
         public uint GridItemWidth => Setting<GlobalSetting>.Current.PictureGridItemWidth;
@@ -113,6 +155,30 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 });
                 return image;
             });
+
+            //标签
+            Tags.Clear();
+            foreach (var tagGroup in Detail.Detail.Tags)
+            {
+                if (tagGroup.Size == 0 || tagGroup.TagList.Count == 0)
+                    continue;
+                var tagManager = Wbooru.Container.Get<ITagManager>();
+                var group = new TagGroup()
+                {
+                    Name = tagGroup.TagGroupName
+                };
+                foreach (var asyncItem in tagGroup.TagList.Select(async x => new TagItem()
+                {
+                    Name = x,
+                    Mark = await tagManager.ContainTag(x, EHentaiGallery.GalleryNameConst, TagRecord.TagRecordType.Marked)
+                }))
+                {
+                    var item = await asyncItem;
+                    item.RefGroup = group;
+                    group.Tags.Add(item);
+                }
+                Tags.Add(group);
+            }
 
             //动态计算几条预览评论
             //限制显示5个评论或者总添加超过300的
@@ -242,6 +308,64 @@ namespace WbooruPlugin.EHentai.UI.Pages
             var dialog = new RateGalleryDialog(client, Detail);
             await Dialog.ShowDialog(dialog);
             ForceRefreshDetail();
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is TagItem item)
+            {
+                item.Check = !item.Check;
+            }
+        }
+
+        private async void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var tagManager = Wbooru.Container.Get<ITagManager>();
+            if (sender is FrameworkElement f && f.DataContext is TagItem item)
+            {
+                if (item.Mark)
+                {
+                    await tagManager.RemoveTag(tagManager.MarkedTags.FirstOrDefault(x => x.FromGallery == EHentaiGallery.GalleryNameConst && x.Tag.Name == item.Name));
+                    Toast.ShowMessage("取消收藏标签成功");
+                    item.Mark = false;
+                }
+                else
+                {
+                    await tagManager.AddTag(new Tag()
+                    {
+                        Name = item.Name,
+                        Type = TagConverter.ConvertTagGroupToTagType(item.RefGroup.Name)
+                    }, EHentaiGallery.GalleryNameConst, TagRecord.TagRecordType.Marked);
+                    Toast.ShowMessage("收藏标签成功");
+                    item.Mark = true;
+                }
+            }
+        }
+
+        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement f && f.DataContext is TagItem item)
+            {
+                Process.Start(new ProcessStartInfo($"https://ehwiki.org/wiki/{WebUtility.HtmlEncode(item.Name)}")
+                {
+                    UseShellExecute = true
+                });
+            }
+        }
+
+        private void MenuItem_Click_2(object sender, RoutedEventArgs e)
+        {
+            var selectTags = Tags.SelectMany(x => x.Tags).Where(x => x.Check).ToArray();
+            if (selectTags.Length == 0)
+            {
+                Toast.ShowMessage("请先至少选择一个标签");
+                return;
+            }
+
+            if (Wbooru.Container.GetAll<Gallery>().OfType<EHentaiGallery>().FirstOrDefault() is Gallery gallery)
+            {
+                NavigationHelper.NavigationPush(new MainGalleryPage(selectTags.Select(x => TagConverter.WrapTagForSearching(x.Name, x.RefGroup.Name)), gallery));
+            }
         }
     }
 }
