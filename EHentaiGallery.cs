@@ -2,6 +2,7 @@
 using EHentaiAPI.Client;
 using EHentaiAPI.Client.Data;
 using EHentaiAPI.ExtendFunction;
+using EHentaiAPI.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -20,11 +21,13 @@ using WbooruPlugin.EHentai.Utils;
 namespace WbooruPlugin.EHentai
 {
     [Export(typeof(Gallery))]
-    public class EHentaiGallery : Gallery, ICustomDetailImagePage, IGalleryAccount
+    public class EHentaiGallery : Gallery, ICustomDetailImagePage, IGalleryAccount, IGallerySearchImage
     {
+        public const string GalleryNameConst = "EHentai";
+
         private EhClient client;
 
-        public override string GalleryName => "EHentai";
+        public override string GalleryName => GalleryNameConst;
 
         public bool IsLoggined => client.Cookies.GetCookies(new Uri(client.EhUrl.GetHost()))?.Any(x => x.Name.Equals("ipb_pass_hash", System.StringComparison.InvariantCultureIgnoreCase) || x.Name.Equals("ipb_member_id", System.StringComparison.InvariantCultureIgnoreCase)) ?? false;
 
@@ -68,28 +71,7 @@ namespace WbooruPlugin.EHentai
             return new EHentaiImageGalleryImageDetail(detail);
         }
 
-        public override IEnumerable<GalleryItem> GetMainPostedImages()
-        {
-            var page = 0;
-            var urlBuilder = new ListUrlBuilder(client.EhUrl);
-
-            while (true)
-            {
-                if (page != 0)
-                    urlBuilder.PageIndex = page;
-
-                var url = urlBuilder.Build();
-
-                var result = client.GetGalleryListAsync(url).Result;
-                foreach (var info in result.galleryInfoList)
-                    yield return EHentaiImageGalleryInfo.Create(client.EhUrl, info);
-
-                if (result.galleryInfoList.Count == 0)
-                    break;
-
-                page++;
-            }
-        }
+        public override IEnumerable<GalleryItem> GetMainPostedImages() => SearchImages(default);
 
         public DetailImagePageBase GenerateDetailImagePageObject()
         {
@@ -116,6 +98,32 @@ namespace WbooruPlugin.EHentai
         {
             //nothing to do.
             return Task.CompletedTask;
+        }
+
+        public IEnumerable<GalleryItem> SearchImages(IEnumerable<string> keywords)
+        {
+            var page = 0;
+            var urlBuilder = new ListUrlBuilder(client.EhUrl);
+
+            if (keywords?.Count() > 0)
+                urlBuilder.Keyword = string.Join(" ", keywords);
+
+            while (true)
+            {
+                if (page != 0)
+                    urlBuilder.PageIndex = page;
+
+                var url = urlBuilder.Build();
+
+                var result = client.GetGalleryListAsync(url).Result;
+                foreach (var info in result.galleryInfoList)
+                    yield return EHentaiImageGalleryInfo.Create(client.EhUrl, info);
+
+                if (result.galleryInfoList.Count == 0)
+                    break;
+
+                page++;
+            }
         }
     }
 }
