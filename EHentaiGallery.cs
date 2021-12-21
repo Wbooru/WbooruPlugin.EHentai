@@ -39,12 +39,16 @@ namespace WbooruPlugin.EHentai
             client.Settings.SharedPreferences = Setting<EhentaiSetting>.Current;
 
             Request.RequestFactory = url => new EHentaiRequest(url);
+
+            //暂时表站
             client.Settings.GallerySite = Settings.GallerySites.SITE_E;
+
             //强制钦定一下列表样式
             client.Cookies.Add(new System.Net.Cookie("sl", "dm_1", "/", "e-hentai.org"));
+            client.Cookies.Add(new System.Net.Cookie("sl", "dm_1", "/", "exhentai.org"));
         }
 
-        public override GalleryItem GetImage(string id)
+        public override Task<GalleryItem> GetImage(string id)
         {
             if (!IdConverter.TryConvertBackEhentai(id, out var gid, out var token))
             {
@@ -54,10 +58,10 @@ namespace WbooruPlugin.EHentai
             var url = client.EhUrl.GetGalleryDetailUrl(gid, token);
             var detail = client.GetGalleryDetailAsync(url).Result;
 
-            return EHentaiImageGalleryInfo.Create(client.EhUrl, detail);
+            return Task.FromResult(EHentaiImageGalleryInfo.Create(client.EhUrl, detail));
         }
 
-        public override GalleryImageDetail GetImageDetial(GalleryItem item)
+        public override async Task<GalleryImageDetail> GetImageDetial(GalleryItem item)
         {
             if ((item as EHentaiImageGalleryInfo)?.CachedGalleryDetail is GalleryImageDetail d)
                 return d;
@@ -68,10 +72,10 @@ namespace WbooruPlugin.EHentai
             var url = client.EhUrl.GetGalleryDetailUrl(gid, token);
             var detail = Task.Run(async () => await client.GetGalleryDetailAsync(url)).Result;
 
-            return new EHentaiImageGalleryImageDetail(detail);
+            return await Task.FromResult(new EHentaiImageGalleryImageDetail(detail));
         }
 
-        public override IEnumerable<GalleryItem> GetMainPostedImages() => SearchImages(default);
+        public override IAsyncEnumerable<GalleryItem> GetMainPostedImages() => SearchImagesAsync(default);
 
         public DetailImagePageBase GenerateDetailImagePageObject()
         {
@@ -83,7 +87,7 @@ namespace WbooruPlugin.EHentai
             try
             {
                 var respUserName = await client.SignInAsync(info.Name, info.Password);
-                if (respUserName?.Equals(info.Name, System.StringComparison.InvariantCultureIgnoreCase) ?? false)
+                if (respUserName?.Equals(info.Name, StringComparison.InvariantCultureIgnoreCase) ?? false)
                 {
                     Log<EHentaiGallery>.Info("login successfully.");
                 }
@@ -100,7 +104,7 @@ namespace WbooruPlugin.EHentai
             return Task.CompletedTask;
         }
 
-        public IEnumerable<GalleryItem> SearchImages(IEnumerable<string> keywords)
+        public async IAsyncEnumerable<GalleryItem> SearchImagesAsync(IEnumerable<string> keywords)
         {
             var page = 0;
             var urlBuilder = new ListUrlBuilder(client.EhUrl);
@@ -115,7 +119,7 @@ namespace WbooruPlugin.EHentai
 
                 var url = urlBuilder.Build();
 
-                var result = client.GetGalleryListAsync(url).Result;
+                var result = await client.GetGalleryListAsync(url);
                 foreach (var info in result.galleryInfoList)
                     yield return EHentaiImageGalleryInfo.Create(client.EhUrl, info);
 

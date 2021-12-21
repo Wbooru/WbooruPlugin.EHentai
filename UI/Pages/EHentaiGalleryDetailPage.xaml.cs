@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -25,6 +26,7 @@ using Wbooru.Galleries;
 using Wbooru.Kernel;
 using Wbooru.Models;
 using Wbooru.Models.Gallery;
+using Wbooru.Network;
 using Wbooru.Settings;
 using Wbooru.UI.Controls;
 using Wbooru.UI.Dialogs;
@@ -142,16 +144,20 @@ namespace WbooruPlugin.EHentai.UI.Pages
                 return;
             }
 
-            Detail = gallery.GetImageDetial(info) as EHentaiImageGalleryImageDetail;
+            Detail = (await gallery.GetImageDetial(info)) as EHentaiImageGalleryImageDetail;
             Log.Debug($"Thumb = {Detail.Detail.Thumb}");
 
-            this.spider = new EhPageImageSpider<System.Drawing.Image>(client, Detail.Detail, async (url, reporter) =>
+            this.spider = new EhPageImageSpider<System.Drawing.Image>(client, Detail.Detail, async (preview, info, reporter) =>
             {
+                var url = Setting<EhentaiSetting>.Current.OriginImageRequire && !string.IsNullOrWhiteSpace(info.OriginImageUrl) ? info.OriginImageUrl : info.ImageUrl;
+
                 var image = await ImageResourceManager.RequestImageAsync(url, url, false, curDLStatus =>
                 {
                     reporter.CurrentDownloadingLength = curDLStatus.downloaded_bytes;
-                    if (curDLStatus.content_bytes != reporter.CurrentDownloadingLength)
-                        reporter.CurrentDownloadingLength = curDLStatus.content_bytes;
+                    if (curDLStatus.content_bytes != reporter.TotalDownloadLength)
+                        reporter.TotalDownloadLength = curDLStatus.content_bytes;
+                },req=> {
+                    req.CookieContainer = client.Cookies;
                 });
                 return image;
             });

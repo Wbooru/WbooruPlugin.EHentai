@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -76,6 +77,8 @@ namespace WbooruPlugin.EHentai.UI.Pages
 
         private readonly EhClient client;
         public GalleryDetail Detail { get; init; }
+
+        public int ScrollOffsetSpeed => Setting<EhentaiSetting>.Current.ScrollOffsetSpeed;
 
         private readonly EhPageImageSpider<System.Drawing.Image> spider;
 

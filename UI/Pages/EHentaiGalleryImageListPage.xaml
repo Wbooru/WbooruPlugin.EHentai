@@ -108,7 +108,7 @@
             ItemsSource="{Binding PreviewImages}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <virtualizingstaggeredpanel:VirtualizingStaggeredPanel GridItemWidth="{Binding GridItemWidth}" />
+                    <virtualizingstaggeredpanel:VirtualizingStaggeredPanel GridItemWidth="{Binding GridItemWidth}" ScrollOffset="{Binding ScrollOffsetSpeed}" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.Template>
